@@ -1,0 +1,43 @@
+<?php
+/**
+* @file
+* Remove Duplicate Nodes.
+*/
+
+/**
+* Delete duplicates from selected content type, based on title. By Robert Douglass.
+* @see <a href="http://robshouse.net/blog-post/remove-duplicate-nodes-dedupe-based-title
+" title="http://robshouse.net/blog-post/remove-duplicate-nodes-dedupe-based-title
+" rel="nofollow">http://robshouse.net/blog-post/remove-duplicate-nodes-dedupe-based-title
+</a> */
+function nodededupe_cron() {
+$prevobj = array();
+$result = db_query("SELECT n.nid, n.title, n.created FROM node n
+inner join
+(SELECT title FROM node
+WHERE type in (:types)
+GROUP BY title HAVING count(*) > 1) n2
+on n.title = n2.title
+ORDER BY title, created, nid DESC", array(':types' => 'events'));
+
+foreach ($result as $obj) {
+
+if ($obj->title == $prevobj->title) {
+$first = node_load($obj->nid);
+
+if ($first->field_dato['und'][0]['value'] === $sec->field_dato['und'][0]['value']){
+if ($first->name == 'Importeret fra Kultunaut.dk') {
+node_delete((int)$obj->nid);
+drupal_set_message("Deleted node nid={$obj->nid}, title={$obj->title}, created={$obj->created}");
+}
+elseif ($sec->name == 'Importeret fra Kultunaut.dk'){
+node_delete((int)$prevobj->nid);
+drupal_set_message("Deleted node nid={$prevobj->nid}, title={$prevobj->title}, created={$prevobj->created}");
+}
+
+}
+}
+$prevobj = $obj;
+$sec = node_load($prevobj->nid);
+}
+}
