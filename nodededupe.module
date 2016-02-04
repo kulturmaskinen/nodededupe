@@ -22,7 +22,7 @@ ORDER BY title, created, nid DESC", array(':types' => 'events'));
 
 foreach ($result as $obj) {
 
-if ($obj->title == $prevobj->title || $obj->title == $prevobjPeriod->title) {
+if ($obj->title == $prevobj->title || $obj->title == $prevobjPeriod) {
 $first = node_load($obj->nid);
 
 if ($first->field_dato['und'][0]['value'] === $sec->field_dato['und'][0]['value']){
