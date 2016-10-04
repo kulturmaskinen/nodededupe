@@ -17,8 +17,7 @@ inner join
 (SELECT title FROM node
 WHERE type in (:types)
 GROUP BY title HAVING count(*) > 1) n2
-on n.title = n2.title
-ORDER BY title, created, nid DESC", array(':types' => 'events'));
+on (n.title like CONCAT(n2.title,'%'))", array(':types' => 'events'));
 
 foreach ($result as $obj) {
 
