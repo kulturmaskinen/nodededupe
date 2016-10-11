@@ -57,7 +57,7 @@ $result2 = db_query("SELECT node.title AS node_title, node.nid AS nid, node.crea
 FROM
 {node} node
 LEFT JOIN {feeds_item} feeds_item ON node.nid = feeds_item.entity_id AND feeds_item.entity_type = 'node'
-WHERE (( (node.status = '1') AND (node.type IN  ('events')) AND  AND (node.title LIKE 'Madam Malkins Kappeværksted%') AND (feeds_item.feed_nid = 'Import fra Kultunaut') ))
+WHERE (( (node.status = '1') AND (node.type IN  ('events')) AND (node.title LIKE 'Madam Malkins Kappeværksted%') AND (feeds_item.feed_nid = 'Import fra Kultunaut') ))
 ORDER BY node_created DESC", array());
 
 foreach ($result2 as $row) {
