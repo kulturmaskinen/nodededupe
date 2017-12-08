@@ -12,64 +12,30 @@
 " rel="nofollow">http://robshouse.net/blog-post/remove-duplicate-nodes-dedupe-based-title
 </a> */
 function nodededupe_cron() {
-$prevobj = array();
-$result = db_query("SELECT
-    n.nid, n.title
-FROM
-    node n
-        inner join
-    (SELECT
-        title
-    FROM
-        node
-    WHERE
-        type in ('events')
-    GROUP BY title
-    HAVING count(*) > 1) n2 ON (n.title like CONCAT(n2.title, '%'))", array());
 
-foreach ($result as $obj) {
-
-if ($obj->title == $prevobj->title || $obj->title == $prevobjPeriod) {
-$first = node_load($obj->nid);
-
-if ($first->field_dato['und'][0]['value'] === $sec->field_dato['und'][0]['value']){
-if ($first->name == 'Import fra Kultunaut') {
-node_delete((int)$obj->nid);
-drupal_set_message("Deleted node nid={$obj->nid}, title={$obj->title}, created={$obj->created}");
-}
-elseif ($sec->name == 'Import fra Kultunaut'){
-node_delete((int)$prevobj->nid);
-drupal_set_message("Deleted node nid={$prevobj->nid}, title={$prevobj->title}, created={$prevobj->created}");
-}
-
-}
-}
-$prevobj = $obj;
-$prevobjPeriod = substr($prevobj->title, 0, -1);
-$sec = node_load($prevobj->nid);
-}
-
-$result = db_query("SELECT node.title AS node_title, node.nid AS nid, node.created AS node_created
-FROM
-{node} node
-LEFT JOIN {feeds_item} feeds_item ON node.nid = feeds_item.entity_id AND feeds_item.entity_type = 'node'
-WHERE (( (node.status = '1') AND (node.type IN  ('events')) AND (node.title LIKE 'Teatersport med de Klaustrofobiske Kosmonauter.') AND (feeds_item.feed_nid = 'Import fra Kultunaut') ))
-ORDER BY node_created DESC", array());
+$result = db_query("SELECT n.nid AS nid, n.uid AS uid, n.status AS status,
+      n.title AS title
+      FROM node n
+      LEFT JOIN field_data_field_dato ON n.nid = field_data_field_dato.entity_id AND field_data_field_dato.entity_type = 'node'
+      INNER JOIN users u ON n.uid = u.uid
+      INNER JOIN (
+         SELECT n.title AS title,
+         COUNT( * ) AS duplicate
+		 FROM node n
+         WHERE (
+          n.type = 'events'
+        )
+        GROUP BY title
+        HAVING count( duplicate ) > 1
+      ) nn ON n.title = nn.title
+      WHERE (
+        n.type = 'events' AND (field_data_field_dato.entity_id = n.nid) AND (n.uid = '101')
+      )
+      ORDER BY title, field_dato_value ASC", array());
 
 foreach ($result as $row) {
 node_delete($row->nid);
-
+drupal_set_message("Deleted node nid={$row->nid}, title={$row->title}");
 }
-
-$result2 = db_query("SELECT node.title AS node_title, node.nid AS nid, node.created AS node_created
-FROM
-{node} node
-LEFT JOIN {feeds_item} feeds_item ON node.nid = feeds_item.entity_id AND feeds_item.entity_type = 'node'
-WHERE (( (node.status = '1') AND (node.type IN  ('events')) AND (node.title LIKE 'Madam Malkins Kappeværksted%') AND (feeds_item.feed_nid = 'Import fra Kultunaut') ))
-ORDER BY node_created DESC", array());
-
-foreach ($result2 as $row) {
-node_delete($row->nid);
-
-}
+cache_clear_all('*', 'cache_page', TRUE);
 }
