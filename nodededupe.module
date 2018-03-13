@@ -34,8 +34,10 @@ $result = db_query("SELECT n.nid AS nid, n.uid AS uid, n.status AS status,
       ORDER BY title, field_dato_value ASC", array());
 
 foreach ($result as $row) {
+if($row->title != "'Det Skide Show' med Kirsten Birgit Schiøtz Kretz Hørsholm og Rasmus Bruun") {
 node_delete($row->nid);
 drupal_set_message("Deleted node nid={$row->nid}, title={$row->title}");
+}
 }
 cache_clear_all('*', 'cache_page', TRUE);
 }
