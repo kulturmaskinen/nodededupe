@@ -19,25 +19,23 @@ $result = db_query("SELECT n.nid AS nid, n.uid AS uid, n.status AS status,
       LEFT JOIN field_data_field_dato ON n.nid = field_data_field_dato.entity_id AND field_data_field_dato.entity_type = 'node'
       INNER JOIN users u ON n.uid = u.uid
       INNER JOIN (
-         SELECT n.title AS title,
+         SELECT entity_id, n.title AS title, n.nid AS nid,
          COUNT( * ) AS duplicate
-		 FROM node n
+		 FROM field_data_field_dato, node n
          WHERE (
-          n.type = 'events'
+          n.type = 'events' AND (n.nid = field_data_field_dato.entity_id) AND n.status = 1
         )
-        GROUP BY title
+        GROUP BY title, field_dato_value
         HAVING count( duplicate ) > 1
-      ) nn ON n.title = nn.title
-      WHERE (
-        n.type = 'events' AND (field_data_field_dato.entity_id = n.nid) AND (n.uid = '101')
-      )
-      ORDER BY title, field_dato_value ASC", array());
+        ) nn ON n.title = nn.title
+		WHERE (
+(n.uid = '101')
+		)
+      ORDER BY title ASC", array());
 
 foreach ($result as $row) {
-if($row->title != "'Det Skide Show' med Kirsten Birgit Schiøtz Kretz Hørsholm og Rasmus Bruun") {
 node_delete($row->nid);
 drupal_set_message("Deleted node nid={$row->nid}, title={$row->title}");
-}
 }
 cache_clear_all('*', 'cache_page', TRUE);
 }
